@@ -1,6 +1,7 @@
 package com.plover.backerymanagmentsystem.core.config;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -30,11 +31,10 @@ public class System4InitialDataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         try {
-            // 1. Seed Auth Users if empty
-            if (authRepository.count() == 0) {
-                log.info("System 4 database user table (bmsauth) is empty. Seeding default Admin and POS Cashier accounts...");
-
-                // Admin Account
+            // 1. Seed/Ensure Admin Account (admin_123)
+            Optional<AuthModel> adminOpt = authRepository.findByUsername("admin_123");
+            if (adminOpt.isEmpty()) {
+                log.info("Seeding System 4 Admin account (admin_123)...");
                 AuthModel adminUser = AuthModel.builder()
                         .id(IdUtil.uuidToBytes(UUID.randomUUID()))
                         .username("admin_123")
@@ -46,8 +46,20 @@ public class System4InitialDataSeeder implements CommandLineRunner {
                         .isActive(true)
                         .createdAt(LocalDateTime.now())
                         .build();
+                authRepository.save(adminUser);
+                log.info("Successfully created admin_123 account.");
+            } else {
+                AuthModel adminUser = adminOpt.get();
+                adminUser.setPasswordHash(BCrypt.hashpw("admin123", BCrypt.gensalt()));
+                adminUser.setActive(true);
+                authRepository.save(adminUser);
+                log.info("Updated existing admin_123 password to 'admin123'.");
+            }
 
-                // POS Cashier Account
+            // 2. Seed/Ensure POS Cashier Account (pos_123)
+            Optional<AuthModel> posOpt = authRepository.findByUsername("pos_123");
+            if (posOpt.isEmpty()) {
+                log.info("Seeding System 4 POS Cashier account (pos_123)...");
                 AuthModel posUser = AuthModel.builder()
                         .id(IdUtil.uuidToBytes(UUID.randomUUID()))
                         .username("pos_123")
@@ -59,11 +71,14 @@ public class System4InitialDataSeeder implements CommandLineRunner {
                         .isActive(true)
                         .createdAt(LocalDateTime.now())
                         .build();
-
-                authRepository.save(adminUser);
                 authRepository.save(posUser);
-
-                log.info("Successfully seeded default users: admin_123 (pass: admin123), pos_123 (pass: pos123)");
+                log.info("Successfully created pos_123 account.");
+            } else {
+                AuthModel posUser = posOpt.get();
+                posUser.setPasswordHash(BCrypt.hashpw("pos123", BCrypt.gensalt()));
+                posUser.setActive(true);
+                authRepository.save(posUser);
+                log.info("Updated existing pos_123 password to 'pos123'.");
             }
 
             // 2. Seed Sample Products if empty
