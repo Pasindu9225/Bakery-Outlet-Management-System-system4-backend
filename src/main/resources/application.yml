@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: backerymanagmentsystem-system4
+
+  jta:
+    enabled: false
+
+  datasource:
+    url: jdbc:mysql://159.198.36.142:3306/bms_system4_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&zeroDateTimeBehavior=CONVERT_TO_NULL&connectTimeout=120000&socketTimeout=120000&autoReconnect=true
+    username: rover
+    password: rover
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 120000
+      initialization-fail-timeout: 120000
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+jwt:
+  secret: nK8hdflStAUnFdUUYyDpiWzEXU7tbyIjSGSKiQQewFgf
+
+server:
+  port: 8094

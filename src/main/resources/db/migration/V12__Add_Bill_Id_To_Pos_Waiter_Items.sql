@@ -1,0 +1,1 @@
+ALTER TABLE pos_waiter_items ADD COLUMN IF NOT EXISTS bill_id VARCHAR(50);

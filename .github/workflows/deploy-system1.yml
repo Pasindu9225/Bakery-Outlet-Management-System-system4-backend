@@ -1,0 +1,81 @@
+name: Deploy System 1 Backend
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Copy JAR to Server via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: "target/backerymanagmentsystem-0.0.1-SNAPSHOT.jar"
+          target: "/root/system1/backend/"
+          strip_components: 1
+
+      - name: Stop Old System 1 Application
+        continue-on-error: true
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            S1_PID=$(ps -ef | grep 'S1-V.*\.jar' | grep -v grep | awk '{print $2}' || true)
+            if [ -n "$S1_PID" ]; then
+              echo "Stopping System 1 process PID: $S1_PID"
+              kill -9 $S1_PID 2>/dev/null || true
+              sleep 3
+            else
+              echo "No System 1 process running"
+            fi
+
+      - name: Deploy New System 1 Version
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            cd /root/system1/backend/
+            
+            # Find highest S1 version
+            HIGHEST_VER=$(ls backerymanagmentsystem-*-S1-V*.jar 2>/dev/null | grep -oP 'S1-V\K[0-9]+' | sort -n | tail -1 || true)
+            if [ -z "$HIGHEST_VER" ]; then
+              NEW_VER=1
+            else
+              NEW_VER=$((HIGHEST_VER + 1))
+            fi
+            
+            NEW_JAR_NAME="backerymanagmentsystem-0.0.1-SNAPSHOT-S1-V${NEW_VER}.jar"
+            
+            # Rename uploaded JAR
+            if [ -f "backerymanagmentsystem-0.0.1-SNAPSHOT.jar" ]; then
+              mv backerymanagmentsystem-0.0.1-SNAPSHOT.jar "$NEW_JAR_NAME"
+            fi
+            
+            # Start new version
+            echo "Starting System 1: $NEW_JAR_NAME"
+            nohup java -jar "$NEW_JAR_NAME" &> bakery.log &
+            sleep 2
+            echo "System 1 deployment complete!"
