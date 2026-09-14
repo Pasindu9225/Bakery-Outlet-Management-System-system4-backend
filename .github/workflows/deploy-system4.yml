@@ -60,15 +60,13 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: 22
           script: |
+            mkdir -p /root/system4/backend/
             cd /root/system4/backend/
             
-            # Find highest S4 version
-            HIGHEST_VER=$(ls backerymanagmentsystem-*-S4-V*.jar 2>/dev/null | grep -oP 'S4-V\K[0-9]+' | sort -n | tail -1 || true)
-            if [ -z "$HIGHEST_VER" ]; then
-              NEW_VER=1
-            else
-              NEW_VER=$((HIGHEST_VER + 1))
-            fi
+            # Find highest S4 version safely
+            HIGHEST_VER=$(ls backerymanagmentsystem-*-S4-V*.jar 2>/dev/null | sed -n 's/.*S4-V\([0-9]*\)\.jar/\1/p' | sort -n | tail -1)
+            HIGHEST_VER=${HIGHEST_VER:-0}
+            NEW_VER=$((HIGHEST_VER + 1))
             
             NEW_JAR_NAME="backerymanagmentsystem-0.0.1-SNAPSHOT-S4-V${NEW_VER}.jar"
             
