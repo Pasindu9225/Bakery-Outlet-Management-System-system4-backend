@@ -1,4 +1,4 @@
-name: Deploy System 1 Backend
+name: Deploy System 4 Backend
 
 on:
   push:
@@ -30,10 +30,10 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           source: "target/backerymanagmentsystem-0.0.1-SNAPSHOT.jar"
-          target: "/root/system1/backend/"
+          target: "/root/system4/backend/"
           strip_components: 1
 
-      - name: Stop Old System 1 Application
+      - name: Stop Old System 4 Application
         continue-on-error: true
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -41,33 +41,33 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            S1_PID=$(ps -ef | grep 'S1-V.*\.jar' | grep -v grep | awk '{print $2}' || true)
-            if [ -n "$S1_PID" ]; then
-              echo "Stopping System 1 process PID: $S1_PID"
-              kill -9 $S1_PID 2>/dev/null || true
+            S4_PID=$(ps -ef | grep 'S4-V.*\.jar' | grep -v grep | awk '{print $2}' || true)
+            if [ -n "$S4_PID" ]; then
+              echo "Stopping System 4 process PID: $S4_PID"
+              kill -9 $S4_PID 2>/dev/null || true
               sleep 3
             else
-              echo "No System 1 process running"
+              echo "No System 4 process running"
             fi
 
-      - name: Deploy New System 1 Version
+      - name: Deploy New System 4 Version
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            cd /root/system1/backend/
+            cd /root/system4/backend/
             
-            # Find highest S1 version
-            HIGHEST_VER=$(ls backerymanagmentsystem-*-S1-V*.jar 2>/dev/null | grep -oP 'S1-V\K[0-9]+' | sort -n | tail -1 || true)
+            # Find highest S4 version
+            HIGHEST_VER=$(ls backerymanagmentsystem-*-S4-V*.jar 2>/dev/null | grep -oP 'S4-V\K[0-9]+' | sort -n | tail -1 || true)
             if [ -z "$HIGHEST_VER" ]; then
               NEW_VER=1
             else
               NEW_VER=$((HIGHEST_VER + 1))
             fi
             
-            NEW_JAR_NAME="backerymanagmentsystem-0.0.1-SNAPSHOT-S1-V${NEW_VER}.jar"
+            NEW_JAR_NAME="backerymanagmentsystem-0.0.1-SNAPSHOT-S4-V${NEW_VER}.jar"
             
             # Rename uploaded JAR
             if [ -f "backerymanagmentsystem-0.0.1-SNAPSHOT.jar" ]; then
@@ -75,7 +75,7 @@ jobs:
             fi
             
             # Start new version
-            echo "Starting System 1: $NEW_JAR_NAME"
+            echo "Starting System 4: $NEW_JAR_NAME"
             nohup java -jar "$NEW_JAR_NAME" &> bakery.log &
             sleep 2
-            echo "System 1 deployment complete!"
+            echo "System 4 deployment complete!"
