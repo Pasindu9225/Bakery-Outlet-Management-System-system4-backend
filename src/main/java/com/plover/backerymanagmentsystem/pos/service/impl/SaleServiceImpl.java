@@ -506,6 +506,7 @@ public class SaleServiceImpl implements SaleService {
                             .plannedQuantity(wrapper.getSaleItem().getQty())
                             .unitCost(p.getUnitPrice())
                             .totalCost(p.getUnitPrice() * wrapper.getSaleItem().getQty())
+                            .productionCenterId(centerId)
                             .build();
                 }).collect(Collectors.toList());
                 

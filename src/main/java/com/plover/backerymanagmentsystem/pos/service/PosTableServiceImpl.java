@@ -252,10 +252,16 @@ public class PosTableServiceImpl implements PosTableService {
         log.info("Generating manual KOT for table item ID: {} for production center ID: {}", tableItemId, productionCenterId);
 
         Long currentOutletId = requireCurrentOutletId();
-        OutletProductionCenter targetMpc = outletProductionCenterRepository.findById(productionCenterId)
-                .orElseThrow(() -> new RuntimeException("Production center not found with id: " + productionCenterId));
-        if (!targetMpc.getOutlet().getOutletId().equals(currentOutletId)) {
-            throw new RuntimeException("Production center does not belong to your outlet");
+        java.util.Optional<OutletProductionCenter> mpcOpt = outletProductionCenterRepository.findById(productionCenterId);
+        if (mpcOpt.isPresent()) {
+            if (currentOutletId != null && !mpcOpt.get().getOutlet().getOutletId().equals(currentOutletId)) {
+                throw new RuntimeException("Production center does not belong to your outlet");
+            }
+        } else {
+            boolean mainPcExists = productionCenterRepository.existsById(productionCenterId);
+            if (!mainPcExists) {
+                throw new RuntimeException("Production center not found with id: " + productionCenterId);
+            }
         }
 
         PosTableItem item = posTableItemRepository.findById(tableItemId)

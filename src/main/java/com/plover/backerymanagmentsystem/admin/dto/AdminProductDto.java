@@ -18,6 +18,7 @@ public class AdminProductDto {
     private String description;
     private Double unitPrice;
     private String categoryName;
+    @com.fasterxml.jackson.annotation.JsonProperty("isActive")
     private Boolean isActive;
     private Long productionCenterId;
     private String productionCenterName;
@@ -31,7 +32,9 @@ public class AdminProductDto {
     private Double maxOrderQty;
     private Double minOrderQty;
     private String unitOfMeasure;
+    @com.fasterxml.jackson.annotation.JsonProperty("isKotEnabled")
     private Boolean isKotEnabled;
+    @com.fasterxml.jackson.annotation.JsonProperty("isFastMoving")
     private Boolean isFastMoving;
     private Integer shelfLifeDays;
     private LocalDateTime createdAt;

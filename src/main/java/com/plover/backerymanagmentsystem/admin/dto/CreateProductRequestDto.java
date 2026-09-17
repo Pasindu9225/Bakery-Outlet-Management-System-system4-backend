@@ -17,6 +17,7 @@ public class CreateProductRequestDto {
     private Long productionCenterId;
     private Double unitPrice;
     private Double gbMargin;
+    @com.fasterxml.jackson.annotation.JsonProperty("isActive")
     private Boolean isActive;
     private Boolean vatStatus;
     private String description;
@@ -26,7 +27,9 @@ public class CreateProductRequestDto {
     private Double maxOrderQty;
     private Double minOrderQty;
     private String unitOfMeasure;
+    @com.fasterxml.jackson.annotation.JsonProperty("isKotEnabled")
     private Boolean isKotEnabled;
+    @com.fasterxml.jackson.annotation.JsonProperty("isFastMoving")
     private Boolean isFastMoving;
     private Integer shelfLifeDays;
 }
